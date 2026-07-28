@@ -28,9 +28,6 @@ public record CreateStudentRequest(
         @NotNull(message = "Номер курса должен быть указан")
         @Min(value = 1, message = "Номер курса должен быть не меньше 1")
         @Max(value = 6, message = "Номер курса должен быть не больше 6")
-        Integer courseNumber,
-
-        @NotNull(message = "Учебный курс должен быть указан")
-        Long courseId
+        Integer courseNumber
 ) {
 }

@@ -12,7 +12,6 @@ import ru.synergy.sms.student_managment_system.controller.student.StudentControl
 import ru.synergy.sms.student_managment_system.dto.student.CreateStudentRequest;
 import ru.synergy.sms.student_managment_system.dto.student.StudentResponse;
 import ru.synergy.sms.student_managment_system.dto.student.UpdateStudentRequest;
-import ru.synergy.sms.student_managment_system.exception.course.CourseNotFoundException;
 import ru.synergy.sms.student_managment_system.exception.student.EmailAlreadyExistsException;
 import ru.synergy.sms.student_managment_system.exception.GlobalExceptionHandler;
 import ru.synergy.sms.student_managment_system.exception.student.StudentNotFoundException;
@@ -50,8 +49,7 @@ class StudentControllerTest {
                 "Иванов",
                 "ivanov@example.com",
                 "ИВТ-101",
-                1,
-                10L
+                1
         );
 
         StudentResponse response = new StudentResponse(
@@ -60,9 +58,7 @@ class StudentControllerTest {
                 "Иванов",
                 "ivanov@example.com",
                 "ИВТ-101",
-                1,
-                10L,
-                "Основы Java"
+                1
         );
 
         when(studentService.create(any(CreateStudentRequest.class)))
@@ -82,9 +78,7 @@ class StudentControllerTest {
                 .andExpect(jsonPath("$.email")
                         .value("ivanov@example.com"))
                 .andExpect(jsonPath("$.groupName").value("ИВТ-101"))
-                .andExpect(jsonPath("$.courseNumber").value(1))
-                .andExpect(jsonPath("$.courseId").value(10))
-                .andExpect(jsonPath("$.courseName").value("Основы Java"));
+                .andExpect(jsonPath("$.courseNumber").value(1));
 
         verify(studentService).create(any(CreateStudentRequest.class));
     }
@@ -97,9 +91,7 @@ class StudentControllerTest {
                 "Иванов",
                 "ivanov@example.com",
                 "ИВТ-101",
-                1,
-                10L,
-                "Основы Java"
+                1
         );
 
         when(studentService.getById(1L))
@@ -113,9 +105,7 @@ class StudentControllerTest {
                 .andExpect(jsonPath("$.email")
                         .value("ivanov@example.com"))
                 .andExpect(jsonPath("$.groupName").value("ИВТ-101"))
-                .andExpect(jsonPath("$.courseNumber").value(1))
-                .andExpect(jsonPath("$.courseId").value(10))
-                .andExpect(jsonPath("$.courseName").value("Основы Java"));
+                .andExpect(jsonPath("$.courseNumber").value(1));
 
         verify(studentService).getById(1L);
     }
@@ -142,8 +132,7 @@ class StudentControllerTest {
                 "",
                 "incorrect-email",
                 "",
-                1,
-                1L
+                1
         );
 
         mockMvc.perform(post("/api/v1/students")
@@ -161,8 +150,7 @@ class StudentControllerTest {
                 "Иванов",
                 "ivanov@example.com",
                 "ИВТ-101",
-                1,
-                10L
+                1
         );
 
         when(studentService.create(any(CreateStudentRequest.class)))
@@ -185,41 +173,13 @@ class StudentControllerTest {
     }
 
     @Test
-    void shouldReturn404WhenCourseNotFoundDuringStudentCreation()
-            throws Exception {
-        CreateStudentRequest request = new CreateStudentRequest(
-                "Иван",
-                "Иванов",
-                "ivanov@example.com",
-                "ИВТ-101",
-                1,
-                999L
-        );
-
-        when(studentService.create(any(CreateStudentRequest.class)))
-                .thenThrow(new CourseNotFoundException(999L));
-
-        mockMvc.perform(post("/api/v1/students")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.error").value("Not Found"))
-                .andExpect(jsonPath("$.message")
-                        .value("Курс с идентификатором 999 не найден"))
-                .andExpect(jsonPath("$.path")
-                        .value("/api/v1/students"));
-    }
-
-    @Test
     void shouldUpdateStudent() throws Exception {
         UpdateStudentRequest request = new UpdateStudentRequest(
                 "Петр",
                 "Петров",
                 "petrov@example.com",
                 "ИВТ-201",
-                2,
-                20L
+                2
         );
 
         StudentResponse response = new StudentResponse(
@@ -228,9 +188,7 @@ class StudentControllerTest {
                 "Петров",
                 "petrov@example.com",
                 "ИВТ-201",
-                2,
-                20L,
-                "Spring Framework"
+                2
         );
 
         when(studentService.update(
@@ -248,10 +206,7 @@ class StudentControllerTest {
                 .andExpect(jsonPath("$.email")
                         .value("petrov@example.com"))
                 .andExpect(jsonPath("$.groupName").value("ИВТ-201"))
-                .andExpect(jsonPath("$.courseNumber").value(2))
-                .andExpect(jsonPath("$.courseId").value(20))
-                .andExpect(jsonPath("$.courseName")
-                        .value("Spring Framework"));
+                .andExpect(jsonPath("$.courseNumber").value(2));
 
         verify(studentService).update(
                 eq(1L),

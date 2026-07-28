@@ -9,12 +9,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.synergy.sms.student_managment_system.dto.student.CreateStudentRequest;
 import ru.synergy.sms.student_managment_system.dto.student.StudentResponse;
 import ru.synergy.sms.student_managment_system.dto.student.UpdateStudentRequest;
-import ru.synergy.sms.student_managment_system.entity.course.Course;
 import ru.synergy.sms.student_managment_system.entity.student.Student;
 import ru.synergy.sms.student_managment_system.exception.student.EmailAlreadyExistsException;
 import ru.synergy.sms.student_managment_system.exception.student.StudentNotFoundException;
 import ru.synergy.sms.student_managment_system.mapper.student.StudentMapper;
-import ru.synergy.sms.student_managment_system.repository.course.CourseRepository;
 import ru.synergy.sms.student_managment_system.repository.student.StudentRepository;
 import ru.synergy.sms.student_managment_system.service.student.StudentServiceImpl;
 
@@ -22,6 +20,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,9 +32,6 @@ class StudentServiceTest {
     private StudentRepository studentRepository;
 
     @Mock
-    private CourseRepository courseRepository;
-
-    @Mock
     private StudentMapper studentMapper;
 
     @InjectMocks
@@ -43,17 +39,9 @@ class StudentServiceTest {
 
     private Student student;
     private StudentResponse studentResponse;
-    private Course course;
 
     @BeforeEach
     void setUp() {
-        course = Course.builder()
-                .id(10L)
-                .name("Основы Java")
-                .description("Базовый курс")
-                .durationHours(72)
-                .build();
-
         student = Student.builder()
                 .id(1L)
                 .firstName("Иван")
@@ -61,7 +49,6 @@ class StudentServiceTest {
                 .email("ivanov@example.com")
                 .groupName("ИВТ-101")
                 .courseNumber(1)
-                .course(course)
                 .build();
 
         studentResponse = new StudentResponse(
@@ -70,9 +57,7 @@ class StudentServiceTest {
                 "Иванов",
                 "ivanov@example.com",
                 "ИВТ-101",
-                1,
-                10L,
-                "Основы Java"
+                1
         );
     }
 
@@ -83,13 +68,12 @@ class StudentServiceTest {
                 "Иванов",
                 "ivanov@example.com",
                 "ИВТ-101",
-                1,
-                10L
+                1
         );
 
         when(studentRepository.existsByEmail(request.email()))
                 .thenReturn(false);
-        when(studentMapper.toEntity(request, course))
+        when(studentMapper.toEntity(request))
                 .thenReturn(student);
         when(studentRepository.save(student))
                 .thenReturn(student);
@@ -112,8 +96,7 @@ class StudentServiceTest {
                 "Иванов",
                 "ivanov@example.com",
                 "ИВТ-101",
-                1,
-                10L
+                1
         );
 
         when(studentRepository.existsByEmail(request.email()))
@@ -124,7 +107,7 @@ class StudentServiceTest {
                 () -> studentService.create(request)
         );
 
-        verify(studentRepository, never()).save(student);
+        verify(studentRepository, never()).save(any(Student.class));
     }
 
     @Test
@@ -155,20 +138,12 @@ class StudentServiceTest {
 
     @Test
     void shouldUpdateStudent() {
-        Course updatedCourse = Course.builder()
-                .id(20L)
-                .name("Spring Framework")
-                .description("Продвинутый курс")
-                .durationHours(96)
-                .build();
-
         UpdateStudentRequest request = new UpdateStudentRequest(
                 "Петр",
                 "Петров",
                 "petrov@example.com",
                 "ИВТ-201",
-                2,
-                20L
+                2
         );
 
         StudentResponse updatedResponse = new StudentResponse(
@@ -177,23 +152,15 @@ class StudentServiceTest {
                 "Петров",
                 "petrov@example.com",
                 "ИВТ-201",
-                2,
-                20L,
-                "Spring Framework"
+                2
         );
 
         when(studentRepository.findById(1L))
                 .thenReturn(Optional.of(student));
-
         when(studentRepository.existsByEmailAndIdNot(request.email(), 1L))
                 .thenReturn(false);
-
-        when(courseRepository.findById(20L))
-                .thenReturn(Optional.of(updatedCourse));
-
         when(studentRepository.save(student))
                 .thenReturn(student);
-
         when(studentMapper.toResponse(student))
                 .thenReturn(updatedResponse);
 
@@ -205,12 +172,8 @@ class StudentServiceTest {
         assertEquals("petrov@example.com", student.getEmail());
         assertEquals("ИВТ-201", student.getGroupName());
         assertEquals(2, student.getCourseNumber());
-        assertEquals(updatedCourse, student.getCourse());
-        assertEquals(20L, student.getCourse().getId());
-        assertEquals("Spring Framework", student.getCourse().getName());
 
         verify(studentRepository).findById(1L);
-        verify(courseRepository).findById(20L);
         verify(studentRepository).save(student);
     }
 

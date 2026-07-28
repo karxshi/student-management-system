@@ -6,8 +6,6 @@ public record StudentResponse(
         String lastName,
         String email,
         String groupName,
-        Integer courseNumber,
-        Long courseId,
-        String courseName
+        Integer courseNumber
 ) {
 }

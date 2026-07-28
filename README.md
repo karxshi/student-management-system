@@ -1,6 +1,6 @@
 # Student Management System
 
-REST API для управления студентами и учебными курсами.
+REST API для управления студентами, учебными курсами и записями студентов на курсы.
 
 Проект разработан в рамках прохождения учебной практики в Университете «Синергия».
 
@@ -12,7 +12,7 @@ REST API для управления студентами и учебными к
 
 - создание студента;
 - получение студента по идентификатору;
-- получение списка студентов;
+- получение списка студентов с пагинацией;
 - обновление информации о студенте;
 - удаление студента;
 - поиск по фамилии;
@@ -27,6 +27,14 @@ REST API для управления студентами и учебными к
 - обновление курса;
 - удаление курса.
 
+### Управление записями на курсы
+
+- запись студента на курс;
+- получение списка курсов студента;
+- получение списка студентов курса;
+- выставление итоговой оценки;
+- удаление записи на курс.
+
 ---
 
 ## Используемые технологии
@@ -36,8 +44,8 @@ REST API для управления студентами и учебными к
 - Spring Web
 - Spring Data JPA
 - Jakarta Validation
-- H2 Database
 - SpringDoc OpenAPI (Swagger)
+- H2 Database
 - Lombok
 - JUnit 5
 - Mockito
@@ -70,17 +78,20 @@ src/main/java
 ├── config
 ├── controller
 │   ├── student
-│   └── course
+│   ├── course
+│   └── enrollment
 ├── dto
 ├── entity
 ├── exception
 ├── mapper
 ├── repository
 │   ├── student
-│   └── course
+│   ├── course
+│   └── enrollment
 ├── service
 │   ├── student
-│   └── course
+│   ├── course
+│   └── enrollment
 └── StudentManagementSystemApplication
 ```
 
@@ -98,7 +109,6 @@ src/main/java
 | email | электронная почта |
 | groupName | учебная группа |
 | courseNumber | номер курса обучения |
-| course | учебный курс |
 
 ### Course
 
@@ -107,18 +117,34 @@ src/main/java
 | id | идентификатор |
 | name | название курса |
 | description | описание |
-| durationHours | продолжительность в часах |
+| durationHours | продолжительность курса (часов) |
+
+### Enrollment
+
+| Поле | Описание |
+|------|----------|
+| id | идентификатор записи |
+| student | студент |
+| course | учебный курс |
+| enrollmentDate | дата записи |
+| status | статус прохождения курса |
+| grade | итоговая оценка |
 
 Связь между сущностями:
 
 ```
+Student (1)
+     │
+     │
+     ▼
+Enrollment
+     ▲
+     │
+     │
 Course (1)
-      ▲
-      │
-Student (N)
 ```
 
-Один курс может быть назначен нескольким студентам.
+Один студент может быть записан на несколько курсов, а один курс может содержать множество студентов.
 
 ---
 
@@ -135,7 +161,7 @@ Student (N)
 | DELETE | `/api/v1/students/{id}` |
 | GET | `/api/v1/students/search/by-last-name` |
 | GET | `/api/v1/students/search/by-group` |
-| GET | `/api/v1/students/search/by-course-number` |
+| GET | `/api/v1/students/search/by-course` |
 
 ### Courses
 
@@ -146,6 +172,16 @@ Student (N)
 | GET | `/api/v1/courses` |
 | PUT | `/api/v1/courses/{id}` |
 | DELETE | `/api/v1/courses/{id}` |
+
+### Enrollments
+
+| Метод | Endpoint |
+|--------|----------|
+| POST | `/api/v1/enrollments` |
+| GET | `/api/v1/enrollments/student/{studentId}` |
+| GET | `/api/v1/enrollments/course/{courseId}` |
+| PATCH | `/api/v1/enrollments/{id}/grade` |
+| DELETE | `/api/v1/enrollments/{id}` |
 
 ---
 
@@ -231,13 +267,13 @@ mvn test
 ## Реализованные возможности
 
 - CRUD для студентов;
-- CRUD для курсов;
-- связь Student → Course;
+- CRUD для учебных курсов;
+- запись студентов на курсы;
+- выставление итоговой оценки;
+- поиск студентов по различным параметрам;
+- пагинация результатов;
 - валидация входящих данных;
-- централизованная обработка ошибок;
-- Swagger/OpenAPI;
-- unit-тесты;
-- controller-тесты.
-
----
-
+- централизованная обработка исключений;
+- документирование REST API с помощью Swagger/OpenAPI;
+- unit-тесты сервисного слоя;
+- тесты контроллеров с использованием MockMvc.

@@ -1,6 +1,9 @@
 package ru.synergy.sms.student_managment_system.controller.course;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +26,7 @@ import java.util.List;
 
 @Tag(
         name = "Курсы",
-        description = "Управление учебными курсами"
+        description = "API для управления учебными курсами"
 )
 @RestController
 @RequestMapping("/api/v1/courses")
@@ -32,7 +35,12 @@ public class CourseController {
 
     private final CourseService courseService;
 
-    @Operation(summary = "Создать курс")
+    @Operation(summary = "Создать учебный курс")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Курс успешно создан"),
+            @ApiResponse(responseCode = "400", description = "Некорректные входные данные"),
+            @ApiResponse(responseCode = "409", description = "Курс уже существует")
+    })
     @PostMapping
     public ResponseEntity<CourseResponse> create(
             @Valid @RequestBody CreateCourseRequest request
@@ -45,29 +53,49 @@ public class CourseController {
     }
 
     @Operation(summary = "Получить курс по идентификатору")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Курс найден"),
+            @ApiResponse(responseCode = "404", description = "Курс не найден")
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<CourseResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<CourseResponse> getById(
+            @Parameter(description = "Идентификатор курса", example = "1")
+            @PathVariable Long id
+    ) {
         return ResponseEntity.ok(courseService.getById(id));
     }
 
-    @Operation(summary = "Получить список курсов")
+    @Operation(summary = "Получить список всех курсов")
+    @ApiResponse(responseCode = "200", description = "Список курсов успешно получен")
     @GetMapping
     public ResponseEntity<List<CourseResponse>> getAll() {
         return ResponseEntity.ok(courseService.getAll());
     }
 
-    @Operation(summary = "Обновить курс")
+    @Operation(summary = "Обновить учебный курс")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Курс успешно обновлен"),
+            @ApiResponse(responseCode = "404", description = "Курс не найден")
+    })
     @PutMapping("/{id}")
     public ResponseEntity<CourseResponse> update(
+            @Parameter(description = "Идентификатор курса", example = "1")
             @PathVariable Long id,
             @Valid @RequestBody UpdateCourseRequest request
     ) {
         return ResponseEntity.ok(courseService.update(id, request));
     }
 
-    @Operation(summary = "Удалить курс")
+    @Operation(summary = "Удалить учебный курс")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Курс успешно удален"),
+            @ApiResponse(responseCode = "404", description = "Курс не найден")
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(
+            @Parameter(description = "Идентификатор курса", example = "1")
+            @PathVariable Long id
+    ) {
         courseService.delete(id);
         return ResponseEntity.noContent().build();
     }

@@ -1,6 +1,7 @@
 package ru.synergy.sms.student_managment_system.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -8,12 +9,15 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.synergy.sms.student_managment_system.exception.course.CourseNameAlreadyExistsException;
 import ru.synergy.sms.student_managment_system.exception.course.CourseNotFoundException;
+import ru.synergy.sms.student_managment_system.exception.enrollment.EnrollmentAlreadyExistsException;
+import ru.synergy.sms.student_managment_system.exception.enrollment.EnrollmentNotFoundException;
 import ru.synergy.sms.student_managment_system.exception.student.EmailAlreadyExistsException;
 import ru.synergy.sms.student_managment_system.exception.student.StudentNotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -66,6 +70,12 @@ public class GlobalExceptionHandler {
             Exception exception,
             HttpServletRequest request
     ) {
+        log.error(
+                "Необработанная ошибка при запросе {}",
+                request.getRequestURI(),
+                exception
+        );
+
         return buildResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "Внутренняя ошибка сервера",
@@ -108,6 +118,30 @@ public class GlobalExceptionHandler {
     ) {
         return buildResponse(
                 HttpStatus.CONFLICT,
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(EnrollmentAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorResponse> handleEnrollmentAlreadyExists(
+            EnrollmentAlreadyExistsException exception,
+            HttpServletRequest request
+    ) {
+        return buildResponse(
+                HttpStatus.CONFLICT,
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(EnrollmentNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleEnrollmentNotFound(
+            EnrollmentNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        return buildResponse(
+                HttpStatus.NOT_FOUND,
                 exception.getMessage(),
                 request.getRequestURI()
         );
